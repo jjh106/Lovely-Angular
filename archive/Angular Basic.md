@@ -117,3 +117,100 @@ app.controller('TodoCtrl', function($scope){
 });
 ```
 
+#### ng-repeat
+
+```html
+<!-- index.html -->
+<body ng-app="todo" ng-controller="TodoCtrl">
+  <ul>
+    <li ng-repeat="todo in todos">
+      <input type="text" ng-model="todo.title">
+      <input type="checkbox" ng-model="todo.completed">
+      <date>{{ todo.createdAt }}</date>
+    </li>
+  </ul>
+</body>
+```
+
+```javascript
+// script.js
+var app = angular.module('todo', []);
+
+app.controller('TodoCtrl', function($scope){
+  $scope.todos = [
+    {
+      title: '부트스트랩 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '앵귤러 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '잠자기',
+      completed: true,
+      createdAt: Date.now()
+    }
+  ];
+})
+```
+
+
+
+#### ngFilter
+
+```html
+<date>{{ todo.createdAt | date: 'yyyy-MM-dd' }}</date>
+```
+
+
+
+#### ng-click
+
+```html
+<!-- index.html -->
+<li ng-repeat="todo in todos">
+  <input type="text" ng-model="todo.title">
+  <input type="checkbox" ng-model="todo.completed">
+  <button ng-click="remove(todo)">삭제</button>
+  <date>{{ todo.createdAt | date: 'yyyy-MM-dd' }}</date>
+</li>
+```
+
+```javascript
+// script.js
+var app = angular.module('todo', []);
+app.controller('TodoCtrl', function($scope){
+  $scope.todos = [
+    {
+      title: '부트스트랩 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '앵귤러 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '잠자기',
+      completed: true,
+      createdAt: Date.now()
+    }
+  ];
+  
+  $scope.remove = function(todo){
+    // find todo index in todos
+    var idx = $scope.todos.findIndex(function(item){
+      return item === todo;
+    });
+    // remove from todos
+    if(idx > -1){
+      $scope.todos.splice(idx, 1);
+    }
+  }
+});
+```
+
