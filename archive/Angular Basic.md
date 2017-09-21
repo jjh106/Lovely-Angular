@@ -117,6 +117,8 @@ app.controller('TodoCtrl', function($scope){
 });
 ```
 
+
+
 #### ng-repeat
 
 ```html
@@ -213,4 +215,131 @@ app.controller('TodoCtrl', function($scope){
   }
 });
 ```
+
+
+
+#### Filter Button
+
+> 완료 항목, 미완료 항목, 모든 항목을 보여주는 기능을 하는 버튼
+
+```html
+<!-- index.html -->
+
+<div class="container">
+  <h1>해야 할 목록</h1>
+  <ul class="list-unstyled">
+    <li ng-repeat="todo in todos | filter: statusFilter">
+      <div class="input-group">
+        <span class="input-group-addon">
+          <input type="checkbox" ng-model="todo.completed">
+        </span>
+        <input type="text" class="form-control" ng-model="todo.title">
+        <span class="input-group-btn">
+          <button class="btn tbtn-danger" type="button" ng-click="remove(todo)">삭제</button>
+        </span>
+      </div>
+      <date>{{ todo.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</date>
+    </li>
+  </ul>
+  
+  <button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+  <button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+  <button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+</div>
+```
+
+> ng-repeat에 필터(|)를 사용
+
+
+
+#### form만들기
+
+```html
+<!-- index.html -->
+
+<div class="container">
+  <h1>해야 할 목록</h1>
+  
+  <form name="TodoForm" ng-submit="add(newTodoTitle)">
+    <div class="input-group">
+      <input type="text" class="form-control" ng-model="newTodoTitle" placeholder="입력...">
+      <span class="input-group-btn">
+        <button class="btn btn-success" type="submit">추가</button>
+      </span>
+    </div>  
+  </form>
+  
+  <ul class="list-unstyled">
+    <li ng-repeat="todo in todos | filter: statusFilter">
+      <div class="input-group">
+        <span class="input-group-addon">
+          <input type="checkbox" ng-model="todo.completed">
+        </span>
+        <input type="text" class="form-control" ng-model="todo.title">
+        <span class="input-group-btn">
+          <button class="btn tbtn-danger" type="button" ng-click="remove(todo)">삭제</button>
+        </span>
+      </div>
+      <date>{{ todo.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</date>
+    </li>
+  </ul>
+  
+  <button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+  <button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+  <button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+</div>
+```
+
+> angular에서 form을 만들 때 name을 지정할 수 있다
+>
+> 추가버튼에 ng-click을 사용할 수 있지만 폼이기 때문에 type을 submit로 하고 form에 ng-submit을 사용하여 add함수를 사용하게 만든다.
+
+```javascript
+// script.js
+
+var app = angular.module('todo', []);
+
+app.controller('TodoCtrl', function($scope){
+  $scope.todos = [
+    {
+      title: '요가수행',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '앵귤러 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '운동하기',
+      completed: true,
+      createdAt: Date.now()
+    }
+  ];
+  
+  $scope.remove = function(todo){
+    var idx = $scope.todos.findIndex(function(item){
+      return item === todo;
+    })
+    if(idx > -1){
+      $scope.todos.splice(idx, 1);
+    }
+  };
+  
+  $scope.add = function(newTodoTitle){
+    var newTodo = {
+      title: newTodoTitle,
+      completed: false,
+      createdAt: Date.now()
+    } ;
+    
+    $scope.todos.push(newTodo);
+    
+    $scope.newTodoTitle = "";
+  }
+})
+```
+
+
 
