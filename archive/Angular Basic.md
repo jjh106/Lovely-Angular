@@ -343,3 +343,76 @@ app.controller('TodoCtrl', function($scope){
 
 
 
+#### form validation
+
+```html
+<!-- index.html -->
+
+<div class="container">
+  <h1>해야 할 목록</h1>
+  
+  <form name="todoForm" ng-submit="add(newTodoTitle)">
+    <div class="input-group">
+      <input type="text" class="form-control" ng-model="newTodoTitle" placeholder="입력..." minlength="3">
+      <span class="input-group-btn">
+        <button class="btn btn-success" type="submit">추가</button>
+      </span>
+    </div>
+    
+    <div ng-show="todoForm.$dirty && todoForm.$invalid">
+      <div class="alert alert-warning" role="alert">세 글자 이상 입력하세요.</div>
+    </div>
+  </form>
+  
+  <pre>{{ todoForm | json }}</pre>
+  
+  <ul class="list-unstyled">
+    <li ng-repeat="todo in todos | filter: statusFilter">
+      <div class="input-group">
+        <span class="input-group-addon">
+          <input type="checkbox" ng-model="todo.completed">
+        </span>
+        <input type="text" class="form-control" ng-model="todo.title">
+        <span class="input-group-btn">
+          <button class="btn tbtn-danger" type="button" ng-click="remove(todo)">삭제</button>
+        </span>
+      </div>
+      <date>{{ todo.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</date>
+    </li>
+  </ul>
+  
+  <button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+  <button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+  <button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+</div>
+```
+
+> {{ todoForm | json }} 으로 앵귤러에서 제공하는 form validation context를 확인할 수 있다.
+>
+> $dirty는 input field에 입력 값이 존재하는지의 유무.
+>
+> $valid : 입력한 값이 유효한지의 여부. (invalid는 반대)
+>
+> 1. 인풋의 속성으로 minlength를 3으로 준다.
+> 2. 경고창을 만들어 ng-show directive를 부여한 div태그로 감싼다.
+> 3. input field에 입력 값이 존재하고(dirty) 그 값이 유효하지 않다면(invalid) 경고창 show !!
+
+*개발자도구로 확인했을 때 클래스에 ng-valid, ng-dirty, ng-invalid... 이 존재하는 것을 확인할 수 있다.*
+
+*이것을 사용해 상황에 맞는 스타일링을 할 수 있다.*
+
+```css
+/* style.css */
+
+/* 입력한 값이 존재하고 유효할 때 input-group 자식요소로 두 개의 클래스명을 가진 요소*/
+.input-group .ng-valid.ng-dirty {
+  border: 1px solid green;
+}
+
+/* 입력한 값이 존재하고 유효하지 않을 때 input-group 자식요소로 두 개의 클래스명을 가진 요소 */
+.input-group .ng-invalid.ng-dirty {
+  border: 1px solid red;
+}
+```
+
+> 리마인드 ) 클래스 명을 붙여서 쓰면 멀티 클래스, 띄어서 쓰면 자손들을 지칭( > 는 자식들 )
