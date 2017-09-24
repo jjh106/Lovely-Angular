@@ -260,9 +260,9 @@ app.controller('TodoCtrl', function($scope){
 <div class="container">
   <h1>해야 할 목록</h1>
   
-  <form name="TodoForm" ng-submit="add(newTodoTitle)">
+  <form name="todoForm" ng-submit="add(newTodoTitle)">
     <div class="input-group">
-      <input type="text" class="form-control" ng-model="newTodoTitle" placeholder="입력...">
+      <input type="text" class="form-control" ng-model="newTodoTitle">
       <span class="input-group-btn">
         <button class="btn btn-success" type="submit">추가</button>
       </span>
@@ -332,7 +332,7 @@ app.controller('TodoCtrl', function($scope){
       title: newTodoTitle,
       completed: false,
       createdAt: Date.now()
-    } ;
+    };
     
     $scope.todos.push(newTodo);
     
@@ -353,7 +353,7 @@ app.controller('TodoCtrl', function($scope){
   
   <form name="todoForm" ng-submit="add(newTodoTitle)">
     <div class="input-group">
-      <input type="text" class="form-control" ng-model="newTodoTitle" placeholder="입력..." minlength="3">
+      <input type="text" class="form-control" ng-model="newTodoTitle" minlength="3">
       <span class="input-group-btn">
         <button class="btn btn-success" type="submit">추가</button>
       </span>
@@ -416,3 +416,316 @@ app.controller('TodoCtrl', function($scope){
 ```
 
 > 리마인드 ) 클래스 명을 붙여서 쓰면 멀티 클래스, 띄어서 쓰면 자손들을 지칭( > 는 자식들 )
+
+
+
+#### directive
+
+```html
+<!-- index.html -->
+
+<div class="container">
+  <todo-title></todo-title>
+  
+  <form name="todoForm" ng-submit="add(newTodoTitle)">
+    <div class="input-group">
+      <input type="text" class="form-control" ng-model="newTodoTitle" minlength="3">
+      <span class="input-group-btn">
+        <button class="btn btn-success" type="submit">추가</button>
+      </span>
+    </div>
+    
+    <div ng-show="todoForm.$dirty && todoForm.$invalid">
+      <div class="alert alert-warning" role="alert">세 글자 이상 입력하세요.</div>
+    </div>
+  </form>
+  
+  <pre>{{ todoForm | json }}</pre>
+  
+  <ul class="list-unstyled">
+    <li ng-repeat="todo in todos | filter: statusFilter">
+      <todo-item></todo-item>
+      <date>{{ todo.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</date>
+    </li>
+  </ul>
+  
+  <button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+  <button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+  <button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+</div>
+```
+
+```javascript
+// script.js
+
+var app = angular.module('todo', []);
+
+app.controller('TodoCtrl', function($scope){
+  $scope.todos = [
+    {
+      title: '요가수행',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '앵귤러 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '운동하기',
+      completed: true,
+      createdAt: Date.now()
+    }
+  ];
+  
+  $scope.remove = function(todo){
+    var idx = $scope.todos.findIndex(function(item){
+      return item === todo;
+    })
+    if(idx > -1){
+      $scope.todos.splice(idx, 1);
+    }
+  };
+  
+  $scope.add = function(newTodoTitle){
+    var newTodo = {
+      title: newTodoTitle,
+      completed: false,
+      createdAt: Date.now()
+    } ;
+    
+    $scope.todos.push(newTodo);
+    
+    $scope.newTodoTitle = "";
+  }
+});
+
+app.directive('todoTitle', function(){
+  return {
+    template: '<h1>투두 목록</h1>'
+  }
+});
+
+app.directive('todoItem', function(){
+  return {
+    template: 
+      '<div class="input-group">' +
+        '<span class="input-group-addon">' +
+          '<input type="checkbox" ng-model="todo.completed">' +
+        '</span>' +
+        '<input type="text" class="form-control" ng-model="todo.title">' +
+        '<span class="input-group-btn">' +
+          '<button class="btn btn-danger" type="button" ng-click="remove(todo)">삭제</button>' +
+        '</span>' +
+      '</div>' +
+      '<date>{{todo.createdAt | date: 'yyyy-MM-dd' }}</date>'
+  }
+});
+```
+
+> todo-title directive 생성
+>
+> * 하이푼 대신에 카멜케이스 사용.
+> * 함수는 하나의 객체를 리턴한다.
+>
+> todo-item directive 생성
+>
+> * ng-repeat으로 출력되는 부분을 리팩토링.
+>
+> * template이 위처럼 길어질 경우 새로운 html파일을 생성 후 그 것을 templateUrl로 연결.
+>
+> * ```javascript
+>   // todoItem.tpl.html 파일 생성 후
+>
+>   app.directive('todoItem', function(){
+>     return {
+>       templateUrl: 'todoItem.tpl.html'
+>     }
+>   });
+>   ```
+
+directive같은 경우 별도의 파일로 분리해서 관리하는 것이 효율적이다.
+
+directives.js를 만들어 관리해 보자!
+
+```javascript
+// directives.js
+
+app.directive('todoTitle', function(){
+  return {
+    template: '<h1>투두 목록</h1>'
+  }
+});
+
+app.directive('todoItem', function(){
+  return {
+    templateUrl: todoItem.tpl.html
+  }
+});
+
+// angular.module 함수에 접근해서 사용
+
+angular.module('todo').directive('todoTitle', function(){
+  return {
+    template: '<h1>투두 목록</h1>'
+  }
+});
+
+angular.module('todo').directive('todoItem', function(){
+  return {
+    templateUrl: todoItem.tpl.html
+  }
+});
+```
+
+> app이라는 변수는 script.js 내부에 있기 때문에 directives.js에서는 사용할 수 없다.
+>
+> 때문에 angular.module 함수를 통해 우리가 정의한 todo module에 접근하여 사용하자!
+>
+> 마지막으로 index.html에서 directives.js를 불러 오자.
+
+
+
+*이번엔 filter button을 별도의 directive로 만들자.*
+
+```html
+<!-- 기존코드 -->
+
+<button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+<button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+<button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+
+<!-- directive -->
+<todo-filters></todo-filters>
+```
+
+```javascript
+// directives.js
+
+angular.module('todo').directive('todoFilters', function(){
+  return {
+    templateUrl: 'todoFilters.tpl.html' 
+  }
+});
+```
+
+```html
+<!-- todoFilters.tpl.html -->
+
+<button class="btn btn-primary" ng-click="statusFilter={completed: true}">Completed</button>
+<button class="btn btn-primary" ng-click="statusFilter={completed: false}">Active</button>
+<button class="btn btn-primary" ng-click="statusFilter={}">All</button>
+```
+
+
+
+*form도 directive를 사용하자!*
+
+```html
+<!-- 기존코드 -->
+
+<form name="todoForm" ng-submit="add(newTodoTitle)">
+  <div class="input-group">
+    <input type="text" class="form-control" ng-model="newTodoTitle" minlength="3">
+    <span class="input-group-btn">
+      <button class="btn btn-success" type="submit">추가</button>
+    </span>
+  </div>
+    
+  <div ng-show="todoForm.$dirty && todoForm.$invalid">
+    <div class="alert alert-warning" role="alert">세 글자 이상 입력하세요.</div>
+  </div>
+</form>
+  
+<!-- directive -->
+
+<todo-form></todo-form>
+```
+
+```javascript
+// directives.js
+
+angular.module('todo').directive('todoForm', function(){
+  return {
+    templateUrl: 'todoForm.tpl.html'
+  }
+});
+```
+
+```html
+<!-- todoForm.tpl.html -->
+
+<form name="todoForm" ng-submit="add(newTodoTitle)">
+  <div class="input-group">
+    <input type="text" class="form-control" ng-model="newTodoTitle" minlength="3">
+    <span class="input-group-btn">
+      <button class="btn btn-success" type="submit">추가</button>
+    </span>
+  </div>
+    
+  <div ng-show="todoForm.$dirty && todoForm.$invalid">
+    <div class="alert alert-warning" role="alert">세 글자 이상 입력하세요.</div>
+  </div>
+</form>
+```
+
+
+
+*controller 또한 별도의 파일로 관리할 수 있다.*
+
+```javascript
+// controllers.js
+
+angular.module('todo').controller('TodoCtrl', function($scope){
+  $scope.todos = [
+    {
+      title: '요가수행',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '앵귤러 학습',
+      completed: false,
+      createdAt: Date.now()
+    },
+    {
+      title: '운동하기',
+      completed: true,
+      createdAt: Date.now()
+    }
+  ];
+  
+  $scope.remove = function(todo){
+    var idx = $scope.todos.findIndex(function(item){
+      return item === todo;
+    })
+    if(idx > -1){
+      $scope.todos.splice(idx, 1);
+    }
+  };
+  
+  $scope.add = function(newTodoTitle){
+    var newTodo = {
+      title: newTodoTitle,
+      completed: false,
+      createdAt: Date.now()
+    } ;
+    
+    $scope.todos.push(newTodo);
+    
+    $scope.newTodoTitle = "";
+  }
+});
+```
+
+> 마찬가지로 index.html 파일에서 불러 오자.
+>
+> script.js는 app.js로 대체 해주고 app 변수는 삭제
+>
+> ```javascript
+> // app.js
+>
+> angular.module('todo', []);
+> ```
+
