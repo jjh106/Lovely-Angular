@@ -729,3 +729,89 @@ angular.module('todo').controller('TodoCtrl', function($scope){
 > angular.module('todo', []);
 > ```
 
+
+
+### service
+
+*data를 관리해 보자!*
+
+```javascript
+// services.js
+
+angular.module('todo').factory('todoStorage', function(){
+  var storage = {
+    todos: [],
+    get: function(){
+      return storage.todos;
+    }
+  }
+  return storage;
+});
+```
+
+> 로직 작성 후 storage를 리턴해 준다.
+
+*사용할 땐 controller에 주입한다.*
+
+```javascript
+// controllers.js
+
+angular.module('todo').controller('TodoCtrl', function($scope, todoStorage){  
+  $scope.todos = todoStorage.get();
+});
+```
+
+
+
+*controller.js의 add함수와 remove함수도 service를 사용해 관리해 보자.*
+
+```javascript
+// controllers.js
+
+angular.module('todo').controller('TodoCtrl', function($scope, todoStorage){
+  $scope.todos = todoStorage.get();
+  
+  $scope.add = function(newTodoTitle){
+    todoStorage.add(newTodoTitle);
+    $scope.newTodoTitle = "";
+  };
+  
+  $scope.remove = function(todo){
+    todoStorage.remove(todo);
+  }
+});
+```
+
+```javascript
+// services.js
+
+angular.module('todo').factory('todoStorage', function(){
+  var storage = {
+    todos: [],
+    
+    get: function(){
+      return storage.todos;
+    },
+    
+    add: function(newTodoTitle){
+      var newTodo = {
+        title: newTodoTitle,
+        completed: false,
+        createdAt: Date.now()
+      };
+      storage.todos.push(newTodo);
+    },
+    
+    remove: function(todo){
+      var idx = storage.todos.findIndex(function(item){
+        return item === todo;
+      })
+      if(idx > -1){
+        storage.todos.splice(idx, 1);
+      }
+    }
+  }
+  return storage;
+});
+```
+
