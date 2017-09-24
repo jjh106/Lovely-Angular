@@ -815,3 +815,116 @@ angular.module('todo').factory('todoStorage', function(){
 });
 ```
 
+
+
+### localStorage 사용하기
+
+```javascript
+// service.js
+
+var TODO_DATA = 'TODO_DATA';
+
+_saveToLocalStorage: function(data){
+  localStorage.setItem(TODO_DATA, JSON.stringify(data))  
+},
+_getFromLocalStorage: function(){
+  return JSON.parse(localStorage.getItem(TODO_DATA)) || [];
+},
+get: function(){
+  angular.copy(storage._getFromLocalStorage(), storage.todos);
+  return storage.todos;
+}
+.
+.
+.
+.
+
+```
+
+> angular의 copy를 사용해 getLocalStorage함수를 storage.todos에 복사한다.
+
+*새로운 todo를 작성하고 storage에 저장하기 위해서는*
+
+```javascript
+add: function(newTodoTitle){
+  var newTodo = {
+    title: newTodoTitle,
+    completed: false,
+    createdAt: Date.now()
+  }
+  storage.todos.push(newTodo);
+  storage._saveToLocalStorage(storage.todos);
+}
+```
+
+*마찬가지로 삭제 시에도 localStorage에 반영해야 한다.*
+
+```javascript
+remove: function(todo){
+  var idx = storage.todos.findIndex(function(item){
+    return item === todo;
+  })
+  if(idx > -1){
+    storage.todos.splice(idx, 1);
+    storage._saveToLocalStorage(storage.todos);
+  }
+}
+```
+
+
+
+*체크박스 업데이트 하기*
+
+```html
+<!-- todoItem.tpl.html -->
+
+<div class="input-group">
+  <span class="input-group-addon">
+    <input type="checkbox" ng-model="todo.completed" ng-click="update()">
+  </span>
+  <input type="text" class="form-control" ng-model="todo.title"> 
+  <span class="input-group-btn">
+    <button class="btn btn-danger" type="button" ng-click="remove(todo)">삭제</button>
+  </span>
+</div>
+<date>{{todo.createdAt | date: 'yyyy-MM-dd' }}</date>
+```
+
+> checkbox에 ng-click="update()" 연결.
+
+```javascript
+// controllers.js
+
+$scope.update = function(){
+  todoStorage.update();
+}
+```
+
+```javascript
+// services.js
+
+update: function(){
+ storage._saveToLocalStorage(storage.todos); 
+}
+```
+
+
+
+*입력 값을 변경하고 focus out 시 데이터 업데이트 하기.*
+
+```html
+<!-- todoItem.tpl.html -->
+
+<div class="input-group">
+  <span class="input-group-addon">
+    <input type="checkbox" ng-model="todo.completed" ng-click="update()">
+  </span>
+  <input type="text" class="form-control" ng-model="todo.title" ng-blur="update()"> 
+  <span class="input-group-btn">
+    <button class="btn btn-danger" type="button" ng-click="remove(todo)">삭제</button>
+  </span>
+</div>
+<date>{{todo.createdAt | date: 'yyyy-MM-dd' }}</date>
+```
+
+> ng-blur="update()"
